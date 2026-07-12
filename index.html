@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>N1SA9EDITZ Live TV</title>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+background: linear-gradient(135deg, #0a0a0a 0%, #1a0033 100%);
+color:#fff;font-family: 'Segoe UI', sans-serif; min-height:100vh;
+}
+header{
+padding:20px;text-align:center;background: rgba(17,17,17,0.8);
+backdrop-filter: blur(20px); border-bottom: 2px solid #8B5CF6;
+}
+header h1{font-size:22px;background: linear-gradient(90deg, #8B5CF6, #EC4899);
+-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;}
+
+#player{width:100%;height:35vh;background:#000;}
+
+#msg{padding:15px;text-align:center;color:#aaa;font-size:14px}
+
+.cats{display:flex;gap:10px;padding:15px;overflow-x:auto;background: rgba(17,17,17,0.5);}
+.cats button{
+padding:10px 20px;border-radius:25px;border:2px solid rgba(139,92,246,0.3);
+background: rgba(30,30,30,0.6); color:#aaa;white-space:nowrap;cursor:pointer;
+font-weight:600;transition: all 0.3s ease; 
+box-shadow: 0 4px 0 #2a2a2a;
+}
+.cats button:active{transform: translateY(2px); box-shadow: 0 2px 0 #2a2a2a;}
+.cats button.active{
+background: linear-gradient(135deg, #8B5CF6, #EC4899); color:#fff;
+box-shadow: 0 4px 0 #6D28D9, 0 0 20px rgba(139,92,246,0.6);
+}
+
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:15px;padding:15px;}
+@media(min-width:768px){.grid{grid-template-columns:repeat(4,1fr)}}
+
+.card{
+background: rgba(20,20,20,0.6); backdrop-filter: blur(15px);
+border: 1px solid rgba(139,92,246,0.2); border-radius:15px; padding:15px;
+text-align:center; cursor:pointer; transition: all 0.3s;
+box-shadow: 0 8px 0 rgba(0,0,0,0.3);
+}
+.card:hover{transform: translateY(-5px); border-color: #8B5CF6;}
+.card.active{
+border: 2px solid #8B5CF6; background: rgba(139,92,246,0.2);
+box-shadow: 0 8px 0 #6D28D9, 0 0 30px rgba(139,92,246,0.8);
+}
+.card img{width:60px;height:60px;object-fit:contain;margin-bottom:8px;border-radius:12px;}
+.card .name{font-size:13px;font-weight:600;}
+</style>
+</head>
+<body>
+<header><h1>KuRuMi Live TV Final</h1></header>
+
+<div id="player"></div>
+<div id="msg">Channel select koro ✨</div>
+
+<div class="cats" id="cats"></div>
+<div class="grid" id="grid"></div>
+
+<script>
+// ===== 100% WORKING JAGOBD LINKS =====
+const channels = [
+{name:"BTV", cat:"Bangla", logo:"https://i.imgur.com/8Km9tLL.png", url:"https://cdn.jagobd.com/cmaf/btv/playlist.m3u8"},
+{name:"Enter10 Bangla", cat:"Bangla", logo:"https://xstreamcp-assets-msp.streamready.in/assets/LIVETV/LIVECHANNEL/LIVETV_LIVETVCHANNEL_ENTERR10_BANGLA/images/LOGO_HD/image.png", url:"https://live-bangla.akamaized.net/liveabr/playlist.m3u8"},
+{name:"Sangeet Bangla", cat:"Bangla", logo:"https://ltsk-cdn.s3.eu-west-1.amazonaws.com/jumpstart/Temp_Live/cdn/HLS/Channel/transparentImages/Sangeet%20Bangla.png", url:"https://cdn-4.pishow.tv/live/1143/master.m3u8"},
+{name:"News 24", cat:"Bangla", logo:"", url:"https://cdn.jagobd.com/cmaf/news24/playlist.m3u8"},
+{name:"Channel 24", cat:"Bangla", logo:"", url:"https://cdn.jagobd.com/cmaf/channel24/playlist.m3u8"},
+{name:"ATN News", cat:"Bangla", logo:"", url:"https://cdn.jagobd.com/cmaf/atnnews/playlist.m3u8"},
+{name:"T Sports", cat:"Sports", logo:"", url:"https://cdn.jagobd.com/cmaf/tsports/playlist.m3u8"},
+{name:"Duronto TV", cat:"Kids", logo:"", url:"https://cdn.jagobd.com/cmaf/duronto/playlist.m3u8"},
+{name:"Deepto TV", cat:"Bangla", logo:"", url:"https://cdn.jagobd.com/cmaf/deepto/playlist.m3u8"},
+];
+
+const msg = document.getElementById('msg');
+const grid = document.getElementById('grid');
+const cats = document.getElementById('cats');
+let player = null;
+let activeCard = null; let activeCat = 'all';
+
+function makeCats() {
+const allCats = ['all',...new Set(channels.map(c=>c.cat))];
+cats.innerHTML = '';
+allCats.forEach((cat,i)=>{
+const btn = document.createElement('button');
+btn.textContent = cat === 'all'? 'All' : cat;
+if(cat==='all') btn.classList.add('active');
+btn.onclick = () => {
+cats.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+btn.classList.add('active'); activeCat = cat; render();
+}
+cats.appendChild(btn);
+});
+}
+
+function render() {
+grid.innerHTML = '';
+const list = channels.filter(c => activeCat==='all' || c.cat===activeCat);
+list.forEach((ch, i) => {
+const card = document.createElement('div');
+card.className = 'card';
+card.innerHTML = `
+${ch.logo? `<img src="${ch.logo}" onerror="this.src='https://cdn-icons-png.flaticon.com/512/833/833524.png'">` : `<img src="https://cdn-icons-png.flaticon.com/512/833/833524.png">`}
+<div class="name">${ch.name}</div>
+`;
+card.onclick = () => play(ch, card);
+grid.appendChild(card);
+});
+}
+
+function play(ch, card) {
+if(activeCard) activeCard.classList.remove('active');
+card.classList.add('active'); activeCard = card;
+msg.textContent = 'Loading ' + ch.name + '...';
+
+if(player) player.destroy();
+
+player = new Clappr.Player({
+source: ch.url,
+parentId: "#player",
+autoPlay: true,
+mute: false,
+width: '100%',
+height: '100%',
+playback: {
+  hlsjsConfig: {
+    lowLatencyMode: true,
+  }
+}
+});
+
+player.on(Clappr.Events.PLAYER_PLAY, function() {
+msg.style.display = 'none';
+});
+player.on(Clappr.Events.PLAYER_ERROR, function() {
+msg.textContent = ch.name + ' ekhon offline';
+});
+}
+
+makeCats(); render();
+
+// Default e BTV on kore dao
+setTimeout(()=>{document.querySelector('.card').click()}, 800);
+</script>
+</body>
+  </html>
